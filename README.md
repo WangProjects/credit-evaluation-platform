@@ -138,8 +138,21 @@ See:
 - `docs/FAIRNESS.md`
 - `docs/PRIVACY_AND_REDACTION.md`
 - `docs/PROJECT_BRIEF.md`
+- `docs/FRONTEND.md`
 
 ---
+
+## Frontend (demo console)
+
+- Location: `frontend/` (Vite + React + TypeScript).
+- Run locally:
+  ```bash
+  cd frontend
+  npm install
+  npm run dev
+  ```
+- Configure API endpoint: set `VITE_API_BASE_URL` (falls back to mock data if unset).
+- UI mirrors backend privacy defaults: hashed applicant IDs and allowlisted audit payloads only.
 
 ## Contributing
 
