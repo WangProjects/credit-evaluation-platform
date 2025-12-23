@@ -8,6 +8,7 @@ import {
   PortfolioApplicationInput,
   ScorePayload,
   ScoreResult,
+  OutcomePayload,
 } from "./types";
 import {
   USE_API,
