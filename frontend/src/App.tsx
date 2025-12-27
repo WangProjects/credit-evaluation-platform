@@ -17,8 +17,10 @@ import {
   fetchExplanation,
   fetchFeatureContract,
   fetchHealth,
+  fetchGovernanceSummary,
   fetchModelInfo,
   scoreApplicant,
+  submitOutcome,
 } from "./lib/api";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
