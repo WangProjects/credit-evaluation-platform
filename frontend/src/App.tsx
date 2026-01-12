@@ -139,6 +139,11 @@ export default function App() {
     }
   }
 
+  async function handleOutcome(payload: OutcomePayload) {
+    await submitOutcome(payload);
+    await Promise.all([refetchAudit(), governanceQuery.refetch()]);
+  }
+
   return (
     <div className="app-shell">
       <Navbar mode={mode} onPrimaryAction={() => document.getElementById("score-workbench")?.scrollIntoView({ behavior: "smooth" })} />
