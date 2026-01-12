@@ -78,6 +78,11 @@ export default function App() {
   const fairnessSignature = fairness ? fairness.groups.join("|") : "";
   const portfolioSize = portfolio?.summary.total_applications ?? 0;
 
+  const governanceQuery = useQuery({
+    queryKey: ["governance-summary", score?.request_id, fairnessSignature],
+    queryFn: fetchGovernanceSummary,
+  });
+
   useEffect(() => {
     refetchAudit();
   }, [score?.request_id, explanation?.request_id, fairnessSignature, portfolioSize, refetchAudit]);
