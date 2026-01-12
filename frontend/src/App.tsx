@@ -30,6 +30,10 @@ import { AuditTable } from "./components/AuditTable";
 import { FairnessPanel } from "./components/FairnessPanel";
 import { ExplainabilityPanel } from "./components/ExplainabilityPanel";
 import { PortfolioWorkbench } from "./components/PortfolioWorkbench";
+import { ProgramRoadmap } from "./components/ProgramRoadmap";
+import { GovernanceCenter } from "./components/GovernanceCenter";
+import { BorrowerTransparency } from "./components/BorrowerTransparency";
+import { OutcomeTracker } from "./components/OutcomeTracker";
 
 export default function App() {
   const [score, setScore] = useState<ScoreResult | null>(null);
