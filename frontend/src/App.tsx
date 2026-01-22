@@ -186,6 +186,10 @@ export default function App() {
         onRun={handlePortfolioRun}
       />
 
+      <OutcomeTracker applicationId={score?.application_id} onSubmit={handleOutcome} />
+
+      <GovernanceCenter summary={governanceQuery.data ?? null} loading={governanceQuery.isLoading} />
+
       <AuditTable
         events={auditQuery.data?.events ?? []}
         total={auditQuery.data?.total}
