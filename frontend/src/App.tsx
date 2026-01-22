@@ -154,7 +154,11 @@ export default function App() {
         mode={mode}
       />
 
+      <ProgramRoadmap />
+
       <MetricsGrid score={score} fairness={fairness} />
+
+      <BorrowerTransparency score={score} />
 
       {error && <div className="error-banner">{error}</div>}
 
