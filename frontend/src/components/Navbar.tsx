@@ -11,8 +11,8 @@ export function Navbar({ mode, onPrimaryAction }: Props) {
       <div className="nav-brand">
         <div className="nav-mark" aria-hidden="true">O</div>
         <div>
-          <div className="nav-title">Inclusive Credit Command Center</div>
-          <div className="muted nav-subtitle">Responsible decisioning, auditability, and cohort monitoring</div>
+          <div className="nav-title">OpenCredit Commons</div>
+          <div className="muted nav-subtitle">Public infrastructure for responsible lending</div>
         </div>
       </div>
 
