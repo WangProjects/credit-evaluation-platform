@@ -5,6 +5,7 @@ import {
   FairnessReport,
   FeatureContract,
   HealthResponse,
+  GovernanceSummary,
   ModelInfo,
   PortfolioAnalysisResult,
   PortfolioApplicationInput,
