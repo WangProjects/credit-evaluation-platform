@@ -22,7 +22,7 @@ export function Navbar({ mode, onPrimaryAction }: Props) {
         <a className="nav-link" href="#score-workbench">Decision lab</a>
         <span className={`pill ${mode === "live" ? "success" : "warn"}`}>{mode === "live" ? "live" : "mock"}</span>
         <button className="btn" type="button" onClick={onPrimaryAction}>
-          Jump to scoring
+          Open decision lab
         </button>
       </div>
     </header>
