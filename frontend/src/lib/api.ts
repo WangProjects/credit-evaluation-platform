@@ -21,6 +21,7 @@ import {
   HealthResponse,
   GovernanceSummary,
   ModelInfo,
+  OutcomePayload,
   PortfolioAnalysisRequest,
   PortfolioAnalysisResult,
   ScorePayload,
