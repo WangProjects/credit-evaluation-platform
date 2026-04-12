@@ -19,6 +19,7 @@ import {
   FairnessRow,
   FeatureContract,
   HealthResponse,
+  GovernanceSummary,
   ModelInfo,
   PortfolioAnalysisRequest,
   PortfolioAnalysisResult,
