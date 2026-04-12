@@ -6,6 +6,7 @@ import {
   demoFairness,
   demoFeatureContract,
   demoHealth,
+  demoGovernanceSummary,
   demoModelInfo,
   demoPortfolioAnalysis,
   demoScoreResult,
