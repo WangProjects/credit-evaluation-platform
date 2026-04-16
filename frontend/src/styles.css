@@ -99,6 +99,17 @@ a {
   justify-content: flex-end;
 }
 
+.nav-link {
+  color: #b7c9d8;
+  font-size: 0.84rem;
+  font-weight: 650;
+  padding: 8px 4px;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+}
+
 .hero-shell {
   margin-top: 16px;
   padding: 26px;
