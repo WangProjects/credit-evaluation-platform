@@ -976,6 +976,16 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .outcome-shell { grid-template-columns: 1fr; }
+
+  .phase-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .guardrail-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .live-control-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lineage-flow { grid-template-columns: 1fr; }
+  .lineage-node { border-left: 0; border-top: 1px solid rgba(199, 219, 237, 0.12); }
+  .lineage-node:first-child { border-top: 0; }
+  .lineage-node p { min-height: 0; }
+
   .score-form-header,
   .panel-footer,
   .nav-shell {
