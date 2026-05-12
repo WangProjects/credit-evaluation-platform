@@ -969,7 +969,10 @@ a {
   .hero-shell,
   .two-column-layout,
   .portfolio-controls,
-  .portfolio-results-grid {
+  .portfolio-results-grid,
+  .program-heading,
+  .roadmap-intro,
+  .borrower-shell {
     grid-template-columns: 1fr;
   }
 
