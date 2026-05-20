@@ -1013,4 +1013,18 @@ a {
   .decision-row {
     flex-direction: column;
   }
+
+  .program-shell { margin-top: 52px; }
+  .objective-switcher, .phase-grid, .guardrail-strip { grid-template-columns: 1fr; }
+  .objective-tab { grid-template-columns: 1fr auto; }
+  .objective-index { grid-column: 1 / -1; }
+  .phase-card p { min-height: 0; }
+  .governance-header { align-items: flex-start; flex-direction: column; }
+  .signal-grid { grid-template-columns: 1fr; }
+  .live-control-strip { grid-template-columns: 1fr; }
+  .control-row { grid-template-columns: 44px minmax(0, 1fr); }
+  .control-row > .status-tag { grid-column: 2; }
+  .reason-heading, .notice-footer { flex-direction: column; }
+  .outcome-choice { grid-template-columns: 1fr; }
+  .outcome-form-footer { align-items: stretch; flex-direction: column; }
 }
