@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import pytest
 from fastapi.testclient import TestClient
+
+pytest.importorskip("fairlearn")
 
 from flg.api.main import app
 from flg.ml.train import train_demo_model

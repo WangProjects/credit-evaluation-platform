@@ -37,3 +37,17 @@ class OutcomeEvent:
     extra: Optional[Dict[str, Any]] = None
 
 
+@dataclass(frozen=True)
+class GenericAuditEvent:
+    """
+    Aggregate or auxiliary audit events that do not fit the decision/outcome schema.
+    """
+
+    event_type: str
+    created_at: datetime
+    payload: Dict[str, Any]
+    request_id: Optional[str] = None
+    application_id: Optional[str] = None
+    model_name: Optional[str] = None
+    model_version: Optional[str] = None
+

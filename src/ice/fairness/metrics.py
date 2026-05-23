@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from typing import Dict, Iterable, List, Tuple
 
 
@@ -54,4 +55,48 @@ def group_rates(
         out[g] = rates_from_counts(confusion_counts(yt, yp))
     return out
 
+
+def selection_rates_by_group(
+    groups: List[str], y_pred: List[int], positive_label: int = 1
+) -> Dict[str, float]:
+    counts: Dict[str, int] = defaultdict(int)
+    positives: Dict[str, int] = defaultdict(int)
+    for group_name, prediction in zip(groups, y_pred, strict=True):
+        counts[group_name] += 1
+        if prediction == positive_label:
+            positives[group_name] += 1
+    return {
+        group_name: (positives[group_name] / counts[group_name]) if counts[group_name] else 0.0
+        for group_name in sorted(counts.keys())
+    }
+
+
+def tpr_by_group(
+    groups: List[str], y_true: List[int], y_pred: List[int], positive_label: int = 1
+) -> Dict[str, float]:
+    true_positives: Dict[str, int] = defaultdict(int)
+    positives: Dict[str, int] = defaultdict(int)
+    for group_name, truth, prediction in zip(groups, y_true, y_pred, strict=True):
+        if truth == positive_label:
+            positives[group_name] += 1
+            if prediction == positive_label:
+                true_positives[group_name] += 1
+    return {
+        group_name: (true_positives[group_name] / positives[group_name]) if positives[group_name] else 0.0
+        for group_name in sorted(positives.keys())
+    }
+
+
+def demographic_parity_difference(selection_rate_by_group: Dict[str, float]) -> float:
+    if not selection_rate_by_group:
+        return 0.0
+    values = list(selection_rate_by_group.values())
+    return float(max(values) - min(values))
+
+
+def equal_opportunity_difference(tpr_by_group_map: Dict[str, float]) -> float:
+    if not tpr_by_group_map:
+        return 0.0
+    values = list(tpr_by_group_map.values())
+    return float(max(values) - min(values))
 
