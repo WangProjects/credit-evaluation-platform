@@ -1,147 +1,256 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { ApplicantFeatures, ScorePayload } from "../types";
-
-type FormValues = ScorePayload;
+import React, { useEffect, useMemo, useState } from "react";
+import { buildDefaultFeatures } from "../data/demo";
+import { ApplicantFeatures, FeatureContract, ScorePayload, SensitiveAttributes } from "../types";
 
 type Props = {
-  onSubmit: (payload: ScorePayload) => void;
-  loading?: boolean;
+  contract: FeatureContract | null;
+  loadingScore?: boolean;
+  loadingExplain?: boolean;
+  onScore: (payload: ScorePayload) => void;
+  onExplain: (payload: ScorePayload) => void;
 };
 
-const defaultFeatures: ApplicantFeatures = {
-  rent_on_time_ratio_12m: 0.94,
-  utilities_on_time_ratio_12m: 0.9,
-  cashflow_volatility_90d: 0.35,
-  income_stability_6m: 0.82,
-  avg_monthly_net_inflow_6m: 4200,
-  avg_daily_balance_90d: 1800,
-  overdraft_count_12m: 0,
-  months_at_address: 24,
-};
+const ageBands = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+", "decline_to_state"];
 
-const ageBands = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
-
-export function ScoreForm({ onSubmit, loading }: Props) {
-  const { register, handleSubmit, watch, setValue } = useForm<FormValues>({
-    defaultValues: {
-      applicant_id: "demo_applicant",
-      features: defaultFeatures,
-      audit_context: { age_band: "25-34", race_ethnicity: "decline_to_state", sex: "decline_to_state" },
-    },
+export function ScoreForm({ contract, loadingScore, loadingExplain, onScore, onExplain }: Props) {
+  const [applicationId, setApplicationId] = useState("demo_applicant");
+  const [features, setFeatures] = useState<ApplicantFeatures>({});
+  const [sensitiveAttributes, setSensitiveAttributes] = useState<SensitiveAttributes>({
+    age_band: "25-34",
+    race_ethnicity: "decline_to_state",
+    sex: "decline_to_state",
   });
 
-  const features = watch("features");
+  useEffect(() => {
+    if (!contract) {
+      return;
+    }
+    setFeatures((previous) => mergeFeatureDefaults(previous, contract));
+  }, [contract]);
+
+  const groupedDefinitions = useMemo(() => {
+    if (!contract) {
+      return [];
+    }
+
+    const groups = new Map<string, typeof contract.feature_definitions>();
+    contract.feature_definitions.forEach((definition) => {
+      const existing = groups.get(definition.group) ?? [];
+      existing.push(definition);
+      groups.set(definition.group, existing);
+    });
+
+    return Array.from(groups.entries());
+  }, [contract]);
+
+  function buildPayload(): ScorePayload {
+    return {
+      application_id: applicationId,
+      features,
+      sensitive_attributes: sanitizeSensitiveAttributes(sensitiveAttributes),
+    };
+  }
+
+  function resetToDefaults() {
+    if (!contract) {
+      return;
+    }
+    setApplicationId("demo_applicant");
+    setFeatures(buildDefaultFeatures(contract));
+    setSensitiveAttributes({
+      age_band: "25-34",
+      race_ethnicity: "decline_to_state",
+      sex: "decline_to_state",
+    });
+  }
+
+  if (!contract) {
+    return (
+      <section id="score-workbench" className="glass card score-form-shell">
+        <div className="section-title">
+          <span className="badge">Loading contract</span>
+          <span className="muted">Fetching live model feature definitions...</span>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <form
-      className="glass card"
-      style={{ padding: 20, display: "grid", gap: 12 }}
-      onSubmit={handleSubmit((values) => onSubmit(values))}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div className="section-title">
-          <span className="badge">Score applicant</span>
-          <span className="muted" style={{ fontSize: 13 }}>
-            Alternative-data only; no PII stored.
-          </span>
+    <section id="score-workbench" className="glass card score-form-shell">
+      <div className="score-form-header">
+        <div>
+          <div className="section-title">
+            <span className="badge">Score applicant</span>
+            <span className="muted">Contract-driven fields from the active model</span>
+          </div>
+          <p className="muted score-form-copy">
+            Every input below is generated from the backend feature contract, so the UI stays aligned with the current
+            model schema and threshold.
+          </p>
         </div>
-        <button className="btn" type="submit" disabled={loading}>
-          {loading ? "Scoring..." : "Score now"}
-        </button>
+        <div className="button-row">
+          <button className="btn ghost-btn" type="button" onClick={resetToDefaults}>
+            Reset defaults
+          </button>
+          <button className="btn ghost-btn" type="button" onClick={() => onExplain(buildPayload())} disabled={loadingExplain}>
+            {loadingExplain ? "Explaining..." : "Explain only"}
+          </button>
+          <button className="btn" type="button" onClick={() => onScore(buildPayload())} disabled={loadingScore}>
+            {loadingScore ? "Scoring..." : "Score applicant"}
+          </button>
+        </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-        {[
-          {
-            label: "Rent on-time ratio (12m)",
-            key: "rent_on_time_ratio_12m",
-            step: 0.01,
-            min: 0,
-            max: 1,
-          },
-          {
-            label: "Utilities on-time ratio (12m)",
-            key: "utilities_on_time_ratio_12m",
-            step: 0.01,
-            min: 0,
-            max: 1,
-          },
-          {
-            label: "Cashflow volatility (90d)",
-            key: "cashflow_volatility_90d",
-            step: 0.01,
-            min: 0,
-            max: 5,
-          },
-          { label: "Income stability (6m)", key: "income_stability_6m", step: 0.01, min: 0, max: 1 },
-          {
-            label: "Avg monthly net inflow (6m)",
-            key: "avg_monthly_net_inflow_6m",
-            step: 50,
-            min: -10000,
-            max: 100000,
-          },
-          {
-            label: "Avg daily balance (90d)",
-            key: "avg_daily_balance_90d",
-            step: 25,
-            min: -5000,
-            max: 100000,
-          },
-          { label: "Overdraft count (12m)", key: "overdraft_count_12m", step: 1, min: 0, max: 50 },
-          { label: "Months at address", key: "months_at_address", step: 1, min: 0, max: 240 },
-        ].map((f) => (
-          <div key={f.key} className="card glass" style={{ padding: 12 }}>
+      <div className="meta-strip">
+        <span className="chip">Model: {contract.model_name}</span>
+        <span className="chip">Version: {contract.model_version}</span>
+        <span className="chip">Threshold: {(contract.decision_threshold * 100).toFixed(0)} / 100</span>
+        <span className="chip">Schema: {contract.feature_schema_hash}</span>
+      </div>
+
+      <div className="glass card inline-card">
+        <div className="label" style={{ marginBottom: 8 }}>
+          <span>Application identifier</span>
+          <span className="muted">Hashed in audit payloads</span>
+        </div>
+        <input className="input" value={applicationId} onChange={(event) => setApplicationId(event.target.value)} />
+      </div>
+
+      <div className="grid feature-group-grid">
+        {groupedDefinitions.map(([groupName, definitions]) => (
+          <div key={groupName} className="glass card feature-group-card">
             <div className="label">
-              <span>{f.label}</span>
-              <span className="muted">{features[f.key as keyof ApplicantFeatures]}</span>
+              <span>{humanizeGroup(groupName)}</span>
+              <span className="muted">{definitions.length} signals</span>
             </div>
-            <input
-              type="range"
-              min={f.min}
-              max={f.max}
-              step={f.step}
-              className="input"
-              {...register(`features.${f.key}` as const, { valueAsNumber: true })}
-              onChange={(e) => setValue(`features.${f.key}` as const, Number(e.target.value))}
-            />
+
+            <div className="feature-card-stack">
+              {definitions.map((definition) => {
+                const value = features[definition.name] ?? definition.default_value ?? 0;
+                const step = definition.step ?? 1;
+                const minimum = definition.minimum ?? 0;
+                const maximum = definition.maximum ?? Math.max(value + step * 10, value || 1);
+                return (
+                  <div key={definition.name} className="feature-card">
+                    <div className="label">
+                      <span>{definition.label}</span>
+                      <span className="muted">{formatFeatureValue(value, step)}</span>
+                    </div>
+                    <p className="muted feature-description">{definition.description}</p>
+
+                    <div className="feature-input-row">
+                      <input
+                        className="range-input"
+                        type="range"
+                        min={minimum}
+                        max={maximum}
+                        step={step}
+                        value={value}
+                        onChange={(event) =>
+                          setFeatures((previous) => ({
+                            ...previous,
+                            [definition.name]: Number(event.target.value),
+                          }))
+                        }
+                      />
+                      <input
+                        className="input feature-number-input"
+                        type="number"
+                        min={minimum}
+                        max={maximum}
+                        step={step}
+                        value={value}
+                        onChange={(event) =>
+                          setFeatures((previous) => ({
+                            ...previous,
+                            [definition.name]: Number(event.target.value),
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="label">
+                      <span className="muted">{definition.required ? "Required" : "Optional"}</span>
+                      <span className={`pill ${definition.higher_is_better ? "success" : "warn"}`}>
+                        {definition.higher_is_better ? "higher helps" : "lower helps"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="glass card" style={{ padding: 12 }}>
-        <div className="label" style={{ marginBottom: 8 }}>
-          <span>Applicant identifier (hashed in audit logs)</span>
-        </div>
-        <input className="input" placeholder="applicant token" {...register("applicant_id")} />
-      </div>
-
-      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-        <div className="glass card" style={{ padding: 12 }}>
-          <div className="label">Age band (optional audit context)</div>
-          <select className="input" {...register("audit_context.age_band")}>
-            {ageBands.map((a) => (
-              <option key={a} value={a}>
-                {a}
+      <div className="grid sensitive-grid">
+        <div className="glass card inline-card">
+          <div className="label" style={{ marginBottom: 8 }}>
+            <span>Age band</span>
+            <span className="muted">Optional monitoring context</span>
+          </div>
+          <select
+            className="input"
+            value={sensitiveAttributes.age_band ?? ""}
+            onChange={(event) => setSensitiveAttributes((previous) => ({ ...previous, age_band: event.target.value }))}
+          >
+            {ageBands.map((ageBand) => (
+              <option key={ageBand} value={ageBand}>
+                {ageBand}
               </option>
             ))}
-            <option value="decline_to_state">Prefer not to say</option>
           </select>
         </div>
-        <div className="glass card" style={{ padding: 12 }}>
-          <div className="label">Race/ethnicity (optional)</div>
+
+        <div className="glass card inline-card">
+          <div className="label" style={{ marginBottom: 8 }}>
+            <span>Race / ethnicity</span>
+            <span className="muted">Aggregated only</span>
+          </div>
           <input
             className="input"
-            placeholder="aggregated categories"
-            {...register("audit_context.race_ethnicity")}
+            value={sensitiveAttributes.race_ethnicity ?? ""}
+            onChange={(event) =>
+              setSensitiveAttributes((previous) => ({ ...previous, race_ethnicity: event.target.value }))
+            }
           />
         </div>
-        <div className="glass card" style={{ padding: 12 }}>
-          <div className="label">Sex (optional)</div>
-          <input className="input" placeholder="aggregated categories" {...register("audit_context.sex")} />
+
+        <div className="glass card inline-card">
+          <div className="label" style={{ marginBottom: 8 }}>
+            <span>Sex</span>
+            <span className="muted">Aggregated only</span>
+          </div>
+          <input
+            className="input"
+            value={sensitiveAttributes.sex ?? ""}
+            onChange={(event) => setSensitiveAttributes((previous) => ({ ...previous, sex: event.target.value }))}
+          />
         </div>
       </div>
-    </form>
+    </section>
   );
+}
+
+function mergeFeatureDefaults(previous: ApplicantFeatures, contract: FeatureContract) {
+  const defaults = buildDefaultFeatures(contract);
+  const next: ApplicantFeatures = {};
+  contract.feature_definitions.forEach((definition) => {
+    next[definition.name] = previous[definition.name] ?? defaults[definition.name];
+  });
+  return next;
+}
+
+function sanitizeSensitiveAttributes(attributes: SensitiveAttributes) {
+  return Object.fromEntries(
+    Object.entries(attributes).filter(([, value]) => value !== undefined && value !== null && value !== ""),
+  );
+}
+
+function humanizeGroup(groupName: string) {
+  return groupName.replace(/_/g, " ");
+}
+
+function formatFeatureValue(value: number, step: number) {
+  return step >= 1 ? value.toFixed(0) : value.toFixed(2);
 }

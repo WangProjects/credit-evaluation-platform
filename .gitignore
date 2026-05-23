@@ -8,9 +8,11 @@ __pycache__/
 
 # Local artifacts (models, reports)
 artifacts/
+frontend/node_modules/
+frontend/dist/
+src/*.egg-info/
 
 # Editor / IDE
 .idea/
 .vscode/
-
 

@@ -1,39 +1,26 @@
 import React from "react";
 
 type Props = {
+  mode: "live" | "mock";
   onPrimaryAction?: () => void;
 };
 
-export function Navbar({ onPrimaryAction }: Props) {
+export function Navbar({ mode, onPrimaryAction }: Props) {
   return (
-    <header className="glass card" style={{ display: "flex", alignItems: "center", gap: 16 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
-        <div
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: 12,
-            background: "linear-gradient(135deg, #22d3ee, #6366f1)",
-            display: "grid",
-            placeItems: "center",
-            fontWeight: 800,
-            color: "#0b1021",
-            boxShadow: "0 10px 30px rgba(99, 102, 241, 0.3)",
-          }}
-        >
-          Q
-        </div>
+    <header className="glass nav-shell">
+      <div className="nav-brand">
+        <div className="nav-mark">Q</div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>Inclusive Credit UI</div>
-          <div className="muted" style={{ fontSize: 13 }}>
-            Open-source, privacy-first decisioning console
-          </div>
+          <div className="nav-title">Inclusive Credit Command Center</div>
+          <div className="muted nav-subtitle">Responsible decisioning, auditability, and cohort monitoring</div>
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+
+      <div className="nav-actions">
+        <span className={`pill ${mode === "live" ? "success" : "warn"}`}>{mode === "live" ? "live" : "mock"}</span>
         <span className="badge">PII-light mode</span>
-        <button className="btn" onClick={onPrimaryAction}>
-          New applicant
+        <button className="btn" type="button" onClick={onPrimaryAction}>
+          Jump to scoring
         </button>
       </div>
     </header>

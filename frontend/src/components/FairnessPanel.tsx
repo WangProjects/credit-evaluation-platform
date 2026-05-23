@@ -6,7 +6,7 @@ type Props = {
   onFairness: (report: FairnessReport) => void;
 };
 
-const groups = ["group_a", "group_b", "group_c"];
+const groups = ["18-24", "25-34", "35-44"];
 
 export function FairnessPanel({ onFairness }: Props) {
   const [rows, setRows] = useState<FairnessRow[]>(() => makeSyntheticRows());
@@ -21,91 +21,91 @@ export function FairnessPanel({ onFairness }: Props) {
       setError(null);
       const report = await fetchFairnessReport(rows);
       onFairness(report);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to compute fairness");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Failed to compute fairness");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section className="glass card" style={{ padding: 16, marginTop: 12 }}>
+    <section className="glass card">
       <div className="section-title">
         <span className="badge">Fairness monitor</span>
-        <span className="muted">Synthetic batch; replace with outcome events</span>
+        <span className="muted">Synthetic approval/outcome batch mapped to monitoring groups</span>
       </div>
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
-        {groups.map((g) => (
-          <div key={g} className="glass card" style={{ padding: 12 }}>
+
+      <div className="grid fairness-card-grid">
+        {groups.map((groupName) => (
+          <div key={groupName} className="glass card compact-card">
             <div className="label">
-              <span>{g}</span>
-              <span className="muted">n={sampleStats[g]?.n ?? 0}</span>
+              <span>{groupName}</span>
+              <span className="muted">n={sampleStats[groupName]?.n ?? 0}</span>
             </div>
-            <div style={{ marginTop: 4 }}>
+            <div style={{ marginTop: 8 }}>
               <div className="label">
-                <span>Approve rate</span>
-                <span>{((sampleStats[g]?.approve_rate ?? 0) * 100).toFixed(1)}%</span>
+                <span>Selection rate</span>
+                <span>{((sampleStats[groupName]?.approve_rate ?? 0) * 100).toFixed(1)}%</span>
               </div>
               <div className="chart-bar">
                 <div
                   className="chart-fill"
-                  style={{ width: `${Math.min(100, (sampleStats[g]?.approve_rate ?? 0) * 120)}%` }}
+                  style={{ width: `${Math.min(100, (sampleStats[groupName]?.approve_rate ?? 0) * 100)}%` }}
                 />
               </div>
             </div>
-            <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-              Outcome rate: {((sampleStats[g]?.outcome_rate ?? 0) * 100).toFixed(1)}%
+            <div className="muted" style={{ marginTop: 8 }}>
+              Positive outcome rate: {((sampleStats[groupName]?.outcome_rate ?? 0) * 100).toFixed(1)}%
             </div>
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
-        <div className="muted" style={{ fontSize: 13 }}>
-          Generated rows are anonymized, categorical groupings only. Replace with aggregated outcome events for your
-          deployment.
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn" type="button" onClick={() => setRows(makeSyntheticRows())} disabled={loading}>
-            Regenerate sample
+
+      <div className="panel-footer">
+        <p className="muted">
+          Use this to simulate parity checks before plugging in aggregated outcomes from a deployment environment.
+        </p>
+        <div className="button-row">
+          <button className="btn ghost-btn" type="button" onClick={() => setRows(makeSyntheticRows())} disabled={loading}>
+            Regenerate batch
           </button>
           <button className="btn" type="button" onClick={runReport} disabled={loading}>
             {loading ? "Computing..." : "Run fairness report"}
           </button>
         </div>
       </div>
-      {error && (
-        <div className="chip" style={{ marginTop: 8, borderColor: "#fca5a5", color: "#fecaca" }}>
-          {error}
-        </div>
-      )}
+
+      {error && <div className="error-banner">{error}</div>}
     </section>
   );
 }
 
 function makeSyntheticRows(n = 120): FairnessRow[] {
   const rows: FairnessRow[] = [];
-  const groupsLocal = groups;
-  for (let i = 0; i < n; i += 1) {
-    const g = groupsLocal[i % groupsLocal.length];
-    const y_pred = Math.random() > 0.35 ? 1 : 0;
-    const y_true = Math.random() > 0.4 ? 1 : 0;
-    rows.push({ protected_group: g, y_true, y_pred });
+  for (let index = 0; index < n; index += 1) {
+    const groupName = groups[index % groups.length];
+    const wave = (index % 12) / 12;
+    const selectionBias = groupName === "25-34" ? 0.68 : groupName === "35-44" ? 0.61 : 0.55;
+    const outcomeBias = groupName === "25-34" ? 0.74 : groupName === "35-44" ? 0.69 : 0.63;
+    const y_pred = wave < selectionBias ? 1 : 0;
+    const y_true = wave < outcomeBias ? 1 : 0;
+    rows.push({ protected_group: groupName, y_true, y_pred });
   }
   return rows;
 }
 
 function summarize(rows: FairnessRow[]) {
   const out: Record<string, { n: number; approve_rate: number; outcome_rate: number }> = {};
-  rows.forEach((r) => {
-    const g = out[r.protected_group] || { n: 0, approve_rate: 0, outcome_rate: 0 };
-    g.n += 1;
-    g.approve_rate += r.y_pred;
-    g.outcome_rate += r.y_true;
-    out[r.protected_group] = g;
+  rows.forEach((row) => {
+    const current = out[row.protected_group] || { n: 0, approve_rate: 0, outcome_rate: 0 };
+    current.n += 1;
+    current.approve_rate += row.y_pred;
+    current.outcome_rate += row.y_true;
+    out[row.protected_group] = current;
   });
-  Object.keys(out).forEach((k) => {
-    out[k].approve_rate = out[k].approve_rate / out[k].n;
-    out[k].outcome_rate = out[k].outcome_rate / out[k].n;
+  Object.keys(out).forEach((groupName) => {
+    out[groupName].approve_rate /= out[groupName].n;
+    out[groupName].outcome_rate /= out[groupName].n;
   });
   return out;
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Dict, Optional
 
@@ -50,6 +51,7 @@ class SklearnLogRegCreditModel(CreditModel):
 
 
 def save_bundle(path: str, bundle: SklearnLogRegBundle) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     joblib.dump(bundle, path)
 
 
@@ -69,5 +71,4 @@ def new_untrained_bundle(version: str = "0.0.1", decision_threshold: float = 0.5
         version=version,
         decision_threshold=decision_threshold,
     )
-
 

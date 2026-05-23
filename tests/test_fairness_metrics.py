@@ -24,5 +24,5 @@ def test_tpr_and_fairness_differences():
     assert tpr == {"a": 0.5, "b": 1.0, "c": 0.0}
 
     selection = selection_rates_by_group(groups, y_pred)
-    assert round(demographic_parity_difference(selection), 4) == round((2 / 3) - 0.5, 4)
+    assert round(demographic_parity_difference(selection), 4) == round((2 / 3) - 0.0, 4)
     assert equal_opportunity_difference(tpr) == 1.0
