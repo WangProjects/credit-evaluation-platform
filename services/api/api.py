@@ -15,6 +15,7 @@ from ice.audit.store import (
     utcnow,
 )
 from services.api.analytics import analyze_portfolio, build_fairness_report, describe_contract, score_application
+from services.api.governance import build_governance_summary
 from services.api.schemas import (
     AuditEventListResponse,
     AuditEventRecord,
