@@ -24,6 +24,7 @@ from services.api.schemas import (
     FairnessReportRequest,
     FairnessReportResponse,
     FeatureContractResponse,
+    GovernanceSummaryResponse,
     ModelInfo,
     OutcomeEventIn,
     PortfolioAnalysisRequest,
