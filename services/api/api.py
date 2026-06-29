@@ -270,6 +270,13 @@ def audit_events(
     )
 
 
+@router.get("/governance/summary", response_model=GovernanceSummaryResponse)
+def governance_summary() -> GovernanceSummaryResponse:
+    settings = api_settings()
+    result = list_jsonl_events(settings.audit_log_path, limit=250, offset=0)
+    return GovernanceSummaryResponse(**build_governance_summary(result["events"]))
+
+
 @router.post("/audit/events")
 def ingest_outcome(event_in: OutcomeEventIn) -> dict:
     settings = api_settings()
