@@ -157,3 +157,29 @@ class PortfolioAnalysisResponse(BaseModel):
     applications: list[PortfolioApplicationResult]
     fairness: Optional[FairnessReportResponse] = None
 
+
+class GovernanceControlResult(BaseModel):
+    id: str
+    label: str
+    value: float
+    threshold: float
+    status: str
+
+
+class GovernanceFairnessSnapshot(BaseModel):
+    demographic_parity_difference: Optional[float] = None
+    equal_opportunity_difference: Optional[float] = None
+    groups: list[str] = Field(default_factory=list)
+
+
+class GovernanceSummaryResponse(BaseModel):
+    overall_status: str
+    readiness: float
+    event_count: int
+    event_counts: Dict[str, int]
+    decision_count: int
+    approval_rate: float
+    explanation_coverage: float
+    outcome_coverage: float
+    latest_fairness: GovernanceFairnessSnapshot
+    controls: list[GovernanceControlResult]
