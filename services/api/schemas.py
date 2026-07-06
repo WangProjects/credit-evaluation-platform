@@ -44,7 +44,7 @@ class ExplainResponse(BaseModel):
 
 class OutcomeEventIn(BaseModel):
     application_id: str = Field(..., min_length=1)
-    outcome_type: str = Field(..., min_length=1)
+    outcome_type: Literal["repayment_30d", "repayment_90d", "repayment_180d", "repayment_12m"]
     outcome_value: int = Field(..., ge=0, le=1)
     extra: Optional[Dict[str, Any]] = None
 
