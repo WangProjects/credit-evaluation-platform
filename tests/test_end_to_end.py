@@ -144,6 +144,12 @@ def test_train_and_monitoring_flow(tmp_path, monkeypatch):
     assert outcome_response.status_code == 200, outcome_response.text
     assert outcome_response.json() == {"status": "ok"}
 
+    invalid_outcome_response = client.post(
+        "/v1/audit/events",
+        json={"application_id": "app_test", "outcome_type": "unknown_window", "outcome_value": 1},
+    )
+    assert invalid_outcome_response.status_code == 422
+
     audit_response = client.get("/v1/audit/events?limit=10")
     assert audit_response.status_code == 200, audit_response.text
     audit_body = audit_response.json()
