@@ -157,3 +157,12 @@ def test_train_and_monitoring_flow(tmp_path, monkeypatch):
     event_types = {event["event_type"] for event in audit_body["events"]}
     assert {"decision", "explain", "fairness_report", "portfolio_analysis", "outcome"} <= event_types
 
+    governance_response = client.get("/v1/governance/summary")
+    assert governance_response.status_code == 200, governance_response.text
+    governance_body = governance_response.json()
+    assert governance_body["event_count"] >= 5
+    assert governance_body["decision_count"] == 1
+    assert governance_body["explanation_coverage"] == 1.0
+    assert governance_body["outcome_coverage"] == 1.0
+    assert governance_body["overall_status"] == "passing"
+    assert len(governance_body["controls"]) == 4
