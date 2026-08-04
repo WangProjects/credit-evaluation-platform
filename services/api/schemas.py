@@ -2,11 +2,21 @@ from __future__ import annotations
 
 from typing import Any, Dict, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from services.api.privacy import validate_pseudonymous_reference
 
 
-class ScoreRequest(BaseModel):
-    application_id: str = Field(..., min_length=1)
+class PseudonymousApplicationModel(BaseModel):
+    application_id: str = Field(..., min_length=3, max_length=128)
+
+    @field_validator("application_id")
+    @classmethod
+    def application_reference_must_be_pseudonymous(cls, value: str) -> str:
+        return validate_pseudonymous_reference(value)
+
+
+class ScoreRequest(PseudonymousApplicationModel):
     features: Dict[str, float]
     sensitive_attributes: Optional[Dict[str, str]] = None
     request_id: Optional[str] = None
@@ -26,8 +36,7 @@ class ScoreResponse(BaseModel):
     extra: Dict[str, Any] = Field(default_factory=dict)
 
 
-class ExplainRequest(BaseModel):
-    application_id: str = Field(..., min_length=1)
+class ExplainRequest(PseudonymousApplicationModel):
     features: Dict[str, float]
 
 
@@ -42,8 +51,7 @@ class ExplainResponse(BaseModel):
     base_value: Optional[float] = None
 
 
-class OutcomeEventIn(BaseModel):
-    application_id: str = Field(..., min_length=1)
+class OutcomeEventIn(PseudonymousApplicationModel):
     outcome_type: Literal["repayment_30d", "repayment_90d", "repayment_180d", "repayment_12m"]
     outcome_value: int = Field(..., ge=0, le=1)
     extra: Optional[Dict[str, Any]] = None
@@ -114,8 +122,7 @@ class AuditEventListResponse(BaseModel):
     events: list[AuditEventRecord]
 
 
-class PortfolioApplicationIn(BaseModel):
-    application_id: str = Field(..., min_length=1)
+class PortfolioApplicationIn(PseudonymousApplicationModel):
     features: Dict[str, float]
     sensitive_attributes: Optional[Dict[str, str]] = None
     actual_outcome: Optional[int] = Field(default=None, ge=0, le=1)
