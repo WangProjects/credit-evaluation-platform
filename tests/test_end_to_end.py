@@ -166,3 +166,7 @@ def test_train_and_monitoring_flow(tmp_path, monkeypatch):
     assert governance_body["outcome_coverage"] == 1.0
     assert governance_body["overall_status"] == "passing"
     assert len(governance_body["controls"]) == 4
+
+    persisted_audit_text = audit_log_path.read_text(encoding="utf-8")
+    assert '"application_id": "app_test"' not in persisted_audit_text
+    assert "ref_" in persisted_audit_text
